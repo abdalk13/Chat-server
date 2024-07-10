@@ -9,10 +9,11 @@ void receive_messages(int socket) {
     while (true) {
         ssize_t bytes_received = recv(socket, buffer, sizeof(buffer) - 1, 0);
         if (bytes_received <= 0) {
+            std::cout << "Disconnected from server." << std::endl;
             break;
         }
         buffer[bytes_received] = '\0';
-        std::cout << buffer << std::endl;
+        std::cout << "Server: " << buffer << std::endl;
     }
 }
 
@@ -23,8 +24,12 @@ int main() {
     server_address.sin_addr.s_addr = INADDR_ANY;
     server_address.sin_port = htons(12345);
 
-    connect(client_socket, reinterpret_cast<sockaddr*>(&server_address), sizeof(server_address));
+    if (connect(client_socket, reinterpret_cast<sockaddr*>(&server_address), sizeof(server_address)) < 0) {
+        std::cerr << "Connection failed." << std::endl;
+        return 1;
+    }
 
+    std::cout << "Connected to server." << std::endl;
     std::thread(receive_messages, client_socket).detach();
 
     std::string message;
