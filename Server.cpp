@@ -18,9 +18,11 @@ void handle_client(int client_socket) {
             std::lock_guard<std::mutex> lock(clients_mutex);
             clients.erase(std::remove(clients.begin(), clients.end(), client_socket), clients.end());
             close(client_socket);
+            std::cout << "Client disconnected: " << client_socket << std::endl;
             break;
         }
         buffer[bytes_received] = '\0';
+        std::cout << "Received message: '" << buffer << "' from client: " << client_socket << std::endl;
 
         std::lock_guard<std::mutex> lock(clients_mutex);
         for (int client : clients) {
@@ -47,6 +49,7 @@ int main() {
         int client_socket = accept(server_socket, nullptr, nullptr);
         std::lock_guard<std::mutex> lock(clients_mutex);
         clients.push_back(client_socket);
+        std::cout << "New client connected: " << client_socket << std::endl;
         std::thread(handle_client, client_socket).detach();
     }
 
